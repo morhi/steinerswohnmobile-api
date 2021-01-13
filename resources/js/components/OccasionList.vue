@@ -1,56 +1,113 @@
 <template>
     <div class="vehicles">
+        <vue-easy-lightbox
+            :imgs="lightbox.state.images"
+            :visible="lightbox.state.visible"
+            :index="lightbox.state.index"
+            @hide="lightbox.hide"
+        ></vue-easy-lightbox>
+
         <template v-for="item of items('sale')" :key="item.getAttribute('id')">
 
             <div class="vehicle">
-                <div v-if="image(item)" class="image">
-                    <img :src="image(item)"/>
+                <div class="image">
+                    <img
+                        v-if="image(item)"
+                        :src="images(item)[0].textContent"
+                        @click="() => lightbox.open(images(item).map(i => i.textContent))"
+                    />
                 </div>
 
-                <span>{{ field(item, 'manufacturer') ?? 'n/a' }}</span><br/>
-                <strong>{{ field(item, 'model') ?? 'n/a' }}</strong><br/>
+                <div class="image-list">
+                    <div class="thumbnail" v-for="(image, index) of images(item).slice(1, 5)">
+                        <img
+                            :src="image.textContent"
+                            width="150"
+                            @click="() => lightbox.open(images(item).map(i => i.textContent), index + 1)"
+                        />
+                    </div>
+                </div>
 
-                <table>
-                    <tr>
-                        <td>Länge:</td>
-                        <td>
-                            <strong>{{ field(item, 'length') ?? 'n/a' }}</strong>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Breite:</td>
-                        <td>
-                            <strong>{{ field(item, 'exterior_width') ?? 'n/a' }}</strong>
-                        </td>
-                    </tr>
+                <div class="data">
+                    <div class="title">{{ field(item, 'title') }}</div>
 
-                    <tr>
-                        <td>Höhe:</td>
-                        <td>
-                            <strong>{{ field(item, 'exterior_height') ?? 'n/a' }}</strong>
-                        </td>
-                    </tr>
-                </table>
+                    <div class="attribute-list">
+                        <div class="attribute">
+                            {{ label(item, 'first_registration') }} {{ field(item, 'first_registration') }}
+                        </div>
 
-                <br/>
-                <strong>Preis:</strong>
-                <span>{{ field(item, 'price') ?? 'n/a' }}</span>
+                        <div class="attribute">{{ field(item, 'mileage') }}</div>
+                    </div>
+
+                    <div class="attribute-list">
+                        <div class="attribute">{{ field(item, 'engine_power') }}</div>
+                        <div class="attribute">{{ field(item, 'gearbox') }}</div>
+                    </div>
+
+                    <div class="attribute-list">
+                        <div class="attribute">
+                            {{ label(item, 'length') }} {{ field(item, 'length') }}
+                        </div>
+
+                        <div class="attribute">
+                            {{ label(item, 'exterior_width') }} {{ field(item, 'exterior_width') }}
+                        </div>
+
+                        <div class="attribute">
+                            {{ label(item, 'exterior_height') }} {{ field(item, 'exterior_height') }}
+                        </div>
+                    </div>
+
+                    <div class="attribute-list">
+                        <div class="attribute">
+                            {{ field(item, 'passenger_capacity') }} {{ label(item, 'passenger_capacity') }}
+                        </div>
+
+                        <div class="attribute">
+                            {{ field(item, 'sleeping_berths') }} {{ label(item, 'sleeping_berths') }}
+                        </div>
+                    </div>
+
+                    <div class="price">
+                        {{ field(item, 'price') }}
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <a
+                        :href="pdfLink(item)"
+                        target="_blank"
+                        class="sqs-block-button-element"
+                        @click="detailClickHandler"
+                    >Details ansehen</a>
+
+                    <a
+                        :href="contactLink(item)"
+                        class="sqs-block-button-element"
+                        @click="contactClickHandler"
+                    >Kontakt aufnehmen</a>
+                </div>
             </div>
         </template>
     </div>
 </template>
 
 <script>
-import {ref} from 'vue'
+import {reactive, ref} from 'vue'
 import axios from 'axios'
 
 const http = axios.create({
-    baseURL: 'https://steinerswohnmobile.dev.localhost/api/'
+    baseURL: 'https://p576249.mittwaldserver.info/api/'
 })
 
 export default {
     setup(props) {
         const xml = ref(null)
+        const lightbox = reactive({
+            images: [],
+            visible :false,
+            index: 0
+        })
 
         http.get('/occasion')
             .then(res => res.data)
@@ -68,12 +125,38 @@ export default {
             }
         }
 
+        const detailClickHandler = (e) => console.log(e)
+        const contactClickHandler = (e) => console.log(e)
 
         return {
+            // Lightbox
+            lightbox: {
+                state: lightbox,
+                open: (images, index = 0) => {
+                    lightbox.images = images;
+                    lightbox.visible = true;
+                    lightbox.index = index;
+                },
+                hide: () => {
+                    lightbox.images = [];
+                    lightbox.visible = false;
+                }
+            },
+
             // Methods
             items,
-            field: (vehicle, id) => vehicle.querySelector('field[id=' + id + ']')?.textContent,
-            image: (vehicle) => vehicle.querySelector('field[id=thumbnail]')?.textContent
+            field: (vehicle, id, fallback = null) => vehicle.querySelector('field[id=' + id + ']')?.textContent ?? fallback,
+            label: (vehicle, id) => vehicle.querySelector('field[id=' + id + ']')?.getAttribute('label') ?? null,
+            image: (vehicle) => vehicle.querySelector('field[id=thumbnail]')?.textContent,
+            images: (vehicle) => Array.from(vehicle.querySelectorAll('advert_media media') ?? []),
+
+            // Getters
+            pdfLink: (vehicle) => `https://www.caravan24.ch/pdf/ins/${vehicle.getAttribute('id')}.chde.pdf`,
+            contactLink: (vehicle) => `mailto:welgkj@test.de?subject=${vehicle.getAttribute('id')}`,
+
+            // Handlers
+            detailClickHandler,
+            contactClickHandler
         }
     }
 }
@@ -82,7 +165,7 @@ export default {
 <style lang="scss">
 .vehicle {
     display: inline-block;
-    width: 300px;
+    width: 450px;
     background: #fbfbfbc2;
     padding: 0 20px 20px 20px;
     margin: 10px;
@@ -94,10 +177,11 @@ export default {
     .image {
         width: calc(100% + 42px);
         height: 0;
-        padding-top: 75%;
+        padding-top: 60%;
         position: relative;
         overflow: hidden;
         margin: -1px 0 20px -21px;
+        cursor: pointer;
 
         img {
             position: absolute;
@@ -105,7 +189,71 @@ export default {
             left: 0;
             right: 0;
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .image-list {
+        display: flex;
+        column-gap: 10px;
+        margin: 0 0 10px 0;
+
+        .thumbnail {
+            display: flex;
+            height: 50px;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+    }
+
+    .data {
+        text-align: center;
+        font-size: .9em;
+
+        .title {
+            font-weight: 500;
+            font-size: 1.3em;
+        }
+
+        .price {
+            font-weight: 500;
+            font-size: 1.5em;
+        }
+
+        .attribute-list .attribute {
+            display: inline-block;
+
+            &:empty {
+                display: none;
+            }
+
+            &:not(:empty):not(:last-of-type):after {
+                display: inline;
+                content: ',';
+                margin-right: 5px;
+            }
+        }
+    }
+
+    .actions {
+        margin-top: 50px;
+        display: flex;
+        flex-direction: column;
+        row-gap: 10px;
+        text-align: center;
+    }
+
+    .sqs-block-button-element {
+        cursor: pointer;
+        transition: all .1s ease;
+        user-select: none;
+
+        &:hover {
+            opacity: .9;
+            filter: brightness(1.3) saturate(1.2);
         }
     }
 }
