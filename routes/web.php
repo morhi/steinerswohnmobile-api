@@ -11,6 +11,9 @@
 |
 */
 
+$router->get('/api/occasion', 'OccasionController@getOccasion');
+
+
 $router->get('/', function () use ($router) {
     return view('test');
 });

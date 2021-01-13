@@ -3,9 +3,9 @@
     <title>Test</title>
 </head>
 <body>
-<div id="occasion-list">Counter</div>
+<div id="occasion-list">Loading...</div>
 
 
-<script src="https://localhost:8080/dist/app.js"></script>
+<script src="/dist/app.js"></script>
 </body>
 </html>
