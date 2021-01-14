@@ -26,6 +26,11 @@
                             @click="() => lightbox.open(images(item).map(i => i.textContent), index + 1)"
                         />
                     </div>
+
+                    <div class="more-images"
+                         v-if="images(item).length > 4"
+                         @click="() => lightbox.open(images(item).map(i => i.textContent), 5)"
+                    ></div>
                 </div>
 
                 <div class="data">
@@ -40,21 +45,21 @@
                     </div>
 
                     <div class="attribute-list">
-                        <div class="attribute">{{ field(item, 'engine_power') }}</div>
+                        <div class="attribute">{{ field(item, 'engine_power')?.toUpperCase() }}</div>
                         <div class="attribute">{{ field(item, 'gearbox') }}</div>
                     </div>
 
                     <div class="attribute-list">
                         <div class="attribute">
-                            {{ label(item, 'length') }} {{ field(item, 'length') }}
+                            {{ label(item, 'length') }}: {{ field(item, 'length') }}
                         </div>
 
                         <div class="attribute">
-                            {{ label(item, 'exterior_width') }} {{ field(item, 'exterior_width') }}
+                            {{ label(item, 'exterior_width') }}: {{ field(item, 'exterior_width') }}
                         </div>
 
                         <div class="attribute">
-                            {{ label(item, 'exterior_height') }} {{ field(item, 'exterior_height') }}
+                            {{ label(item, 'exterior_height') }}: {{ field(item, 'exterior_height') }}
                         </div>
                     </div>
 
@@ -105,7 +110,7 @@ export default {
         const xml = ref(null)
         const lightbox = reactive({
             images: [],
-            visible :false,
+            visible: false,
             index: 0
         })
 
@@ -128,7 +133,7 @@ export default {
         const detailClickHandler = (e) => console.log(e)
         const contactClickHandler = (e) => console.log(e)
 
-        return {
+        const _this = {
             // Lightbox
             lightbox: {
                 state: lightbox,
@@ -152,17 +157,23 @@ export default {
 
             // Getters
             pdfLink: (vehicle) => `https://www.caravan24.ch/pdf/ins/${vehicle.getAttribute('id')}.chde.pdf`,
-            contactLink: (vehicle) => `mailto:welgkj@test.de?subject=${vehicle.getAttribute('id')}`,
+            contactLink: (vehicle) => {
+                const subject = 'Anfrage zu ' + _this.field(vehicle, 'title')
+
+                return `mailto:info@steiners-wohnmobile.ch?subject=${encodeURIComponent(subject)}`
+            },
 
             // Handlers
             detailClickHandler,
             contactClickHandler
         }
+
+        return _this;
     }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .vehicle {
     display: inline-block;
     width: 450px;
@@ -183,7 +194,12 @@ export default {
         margin: -1px 0 20px -21px;
         cursor: pointer;
 
+        &:hover img {
+            transform: scale(1.02);
+        }
+
         img {
+            transition: transform .2s ease;
             position: absolute;
             top: 0;
             left: 0;
@@ -198,14 +214,35 @@ export default {
         display: flex;
         column-gap: 10px;
         margin: 0 0 10px 0;
+        height: 50px;
 
         .thumbnail {
             display: flex;
-            height: 50px;
+            height: 100%;
             overflow: hidden;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            border-radius: 3px;
+
+            &:hover img {
+                transform: scale(1.1);
+            }
+
+            img {
+                transition: transform .2s ease;
+            }
+        }
+
+        .more-images {
+            padding: 20px 25px;
+            cursor: pointer;
+            border-radius: 3px;
+
+            background: linear-gradient(#777, #777), linear-gradient(#777, #777), #eee;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 50% 2px, 2px 50%; /*thickness = 2px, length = 50% (25px)*/
         }
     }
 
@@ -221,6 +258,7 @@ export default {
         .price {
             font-weight: 500;
             font-size: 1.5em;
+            margin-top: 20px;
         }
 
         .attribute-list .attribute {
@@ -239,7 +277,7 @@ export default {
     }
 
     .actions {
-        margin-top: 50px;
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         row-gap: 10px;
