@@ -1,5 +1,5 @@
 <template>
-    <div class="vehicles">
+    <div class="vehicles sqs-layout">
         <vue-easy-lightbox
             :imgs="lightbox.state.images"
             :visible="lightbox.state.visible"
@@ -7,9 +7,13 @@
             @hide="lightbox.hide"
         ></vue-easy-lightbox>
 
-        <template v-for="item of items('sale')" :key="item.getAttribute('id')">
-            <Vehicle :vehicle="item" @lightbox="(images, index) => lightbox.open(images, index)"/>
-        </template>
+        <div class="row sqs-row">
+            <div class="col sqs-col-4 span-4" v-for="item of items('sale')" :key="item.getAttribute('id')">
+                <div class="sqs-block">
+                    <Vehicle :vehicle="item" @lightbox="(images, index) => lightbox.open(images, index)"/>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -86,6 +90,19 @@ export default {
     @media all and (max-width: 340px) {
         margin-left: -19px;
         width: 100vw;
+    }
+
+    > .row {
+        display: flex;
+        flex-wrap: wrap;
+
+        > .col > .sqs-block {
+            height: 100%;
+
+            > .vehicle {
+                height: 100%;
+            }
+        }
     }
 }
 </style>

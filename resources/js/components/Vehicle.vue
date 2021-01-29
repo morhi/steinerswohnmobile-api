@@ -140,12 +140,13 @@ export default {
 .vehicle {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 280px;
-    max-width: 500px;
+    //flex: 1;
+    //min-width: 280px;
+    //max-width: 500px;
+    //width: 100%;
     background: #fbfbfbc2;
     padding: 0 20px 20px 20px;
-    margin: 10px;
+    //margin: 10px;
     border: 1px solid #d6d6d675;
     border-radius: 5px;
     overflow: hidden;

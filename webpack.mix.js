@@ -1,12 +1,11 @@
 let mix = require('laravel-mix')
 let fs = require('fs')
 
-console.log(process.env)
-
 // Build the app
 mix
     .vue({version: 3})
     .js('resources/js/app.js', 'public/dist/')
+    .version()
 
     .webpackConfig({
         output: {
