@@ -233,13 +233,18 @@ export default {
 
     .data {
         text-align: center;
-        font-size: .9em;
+        font-size: 1rem;
         flex: 1;
 
         .title {
             font-weight: 500;
-            font-size: 1.3em;
+            font-size: calc((1.6 - 1) * 1.2vh + 1rem);
+            line-height: 1.3664;
             margin: 1em 0;
+
+            @media screen and (min-width: 1944px) {
+                font-size: calc(1.6 * 1rem);
+            }
         }
 
         .attribute-list .attribute {
