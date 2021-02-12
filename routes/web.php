@@ -15,5 +15,9 @@ $router->get('/api/occasion', 'OccasionController@getOccasion');
 
 
 $router->get('/', function () use ($router) {
-    return view('test');
+    if (env('APP_ENV') === 'local') {
+        return view('test');
+    }
+
+    return response('', 403);
 });
