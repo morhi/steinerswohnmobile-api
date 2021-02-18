@@ -12,6 +12,7 @@
 */
 
 $router->get('/api/vehicles', 'VehiclesController@getVehicles');
+$router->get('/api/vehicles/{id}', 'VehiclesController@getVehicle');
 
 $router->get('/', function () use ($router) {
     if (env('APP_ENV') === 'local') {

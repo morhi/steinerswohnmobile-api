@@ -2,27 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use DOMDocument;
+use DOMXPath;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Laravel\Lumen\Http\Request;
 
 class VehiclesController extends Controller
 {
-    public function getVehicles(Request $request, Response $response)
+    public const HOUR_IN_SECONDS = 3600;
+
+    public function getVehicles(Response $response)
     {
-        $vehicles = Cache::get('vehicles');
-
-        if (!$vehicles) {
+        $vehicles = Cache::remember('vehicles', self::HOUR_IN_SECONDS, function () {
             $http = Http::get('https://www.caravan24.ch/api/rest/?method=dealer&token=d8e7f08d726b970b69a947600139cf19');
-            $vehicles = $http->body();
 
-            Cache::add('vehicles', $vehicles, 600);
-        }
-
+            return $http->body();
+        });
 
         return $response
             ->setContent($vehicles)
             ->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Get the detail data for a single vehicle.
+     *
+     * @param  Response  $response
+     * @param  int  $id
+     * @return Response
+     */
+    public function getVehicle(Response $response, int $id)
+    {
+        $url = 'https://www.caravan24.ch/chde/wohnmobile/detail/'.$id;
+        $key = 'vehicle_detail_'.md5($url);
+
+        $body = Cache::remember($key, self::HOUR_IN_SECONDS, function () use ($url) {
+            $http = Http::get($url);
+
+            return base64_encode($http->body());
+        });
+
+        try {
+            $doc = new DOMDocument();
+            $doc->loadHTML(base64_decode($body));
+            $path = new DOMXPath($doc);
+
+            $rentPrice = $path->query('//p[@class="rentprice"]')->item(0)->textContent;
+
+        } catch (\Exception $e) {
+            return $response->setStatusCode(404);
+        }
+
+        return $response->setContent([
+            'rent_price' => $rentPrice
+        ]);
     }
 }
