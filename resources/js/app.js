@@ -6,9 +6,11 @@ import VehicleList from './components/VehicleList'
 const containers = document.querySelectorAll('[data-vehicles]');
 
 containers.forEach(container => {
-    const type = container.getAttribute('data-vehicles');
+    const scope = container.getAttribute('data-vehicles') || 'sale';
+    const type = container.getAttribute('data-type');
 
     const app = Vue.createApp(VehicleList, {
+        scope,
         type
     })
 

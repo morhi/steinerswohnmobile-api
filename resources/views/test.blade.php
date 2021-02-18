@@ -18,8 +18,7 @@
     </style>
 </head>
 <body>
-<div data-vehicles="rent">Loading...</div>
-<div data-vehicles="sale">Loading...</div>
+<div data-vehicles data-type="Gebrauchtwagen">Loading...</div>
 
 {{-- <script src="/dist/app.js"></script> --}}
 <script src="https://localhost:8080/dist/app.js"></script>

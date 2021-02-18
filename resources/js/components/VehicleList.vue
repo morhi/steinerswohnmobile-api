@@ -8,7 +8,7 @@
         ></vue-easy-lightbox>
 
         <div class="row sqs-row">
-            <div class="col sqs-col-4 span-4" v-for="item of items(type)" :key="item.getAttribute('id')">
+            <div class="col sqs-col-4 span-4" v-for="item of items()" :key="item.getAttribute('id')">
                 <div class="sqs-block">
                     <Vehicle :vehicle="item" @lightbox="(images, index) => lightbox.open(images, index)"/>
                 </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { reactive, ref } from 'vue'
+import { reactive, ref, toRef, toRefs } from 'vue'
 import axios from 'axios'
 
 import Vehicle from './Vehicle'
@@ -32,13 +32,19 @@ export default {
         Vehicle
     },
     props: {
+        scope: {
+            type: String,
+            required: true,
+        },
         type: {
             type: String,
-            required: false,
-            default: () => 'sale'
+            required: true
         }
     },
-    setup() {
+    setup(props) {
+        const scope = toRef(props, 'scope')
+        const type = toRef(props, 'type')
+
         const xml = ref(null)
         const lightbox = reactive({
             images: [],
@@ -50,16 +56,16 @@ export default {
             .then(res => res.data)
             .then(data => xml.value = (new DOMParser).parseFromString(data, 'application/xml'))
 
-        const items = (type = undefined) => {
+        const items = () => {
             if (!xml.value) {
                 return [];
             }
 
-            if (type) {
-                return Array.from(xml.value.querySelectorAll(`ad[type=${ type }]`));
-            } else {
-                return Array.from(xml.value.querySelectorAll('ad'));
-            }
+            return Array
+                .from(xml.value.querySelectorAll(`ad[type=${ scope.value }]`))
+                .filter(ad => {
+                    return ad.querySelector('field[id=saleclass]').textContent === type.value
+                })
         }
 
         return {
