@@ -116,7 +116,7 @@ export default {
             data.value = await api.getVehicle(id)
         }
 
-        onMounted(getVehicleData);
+        type === 'rent' && onMounted(getVehicleData);
 
         return {
             el,

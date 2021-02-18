@@ -51,13 +51,34 @@ class VehiclesController extends Controller
             return $response->setStatusCode(404);
         }
 
-        $rentPrice = $path->query('//p[@class="rentprice"]')->item(0)->textContent ?? null;
-        $rentalTable = $doc->saveHTML($path->query('//table[@class="rental"]')->item(0)) ?? null;
+        $rentPrice = $this->getRentPrice($path);
+        $rentalTable = $this->getRentalTable($doc, $path);
 
         return $response->setContent([
             'id' => $id,
             'rent_price' => $rentPrice,
             'rental_table' => $rentalTable
         ]);
+    }
+
+    /**
+     * @param  DOMXPath  $path
+     * @return string|null
+     */
+    private function getRentPrice(DOMXPath $path): ?string
+    {
+        return $path->query('//p[@class="rentprice"]')->item(0)->textContent ?? null;
+    }
+
+    /**
+     * @param  DOMDocument  $doc
+     * @param  DOMXPath  $path
+     * @return string|null
+     */
+    private function getRentalTable(DOMDocument $doc, DOMXPath $path): ?string
+    {
+        $node = $path->query('//table[@class="rental"]')->item(0);
+
+        return $node ? $doc->saveHTML($node) : null;
     }
 }
