@@ -45,17 +45,19 @@ class VehiclesController extends Controller
 
         try {
             $doc = new DOMDocument();
-            $doc->loadHTML(base64_decode($body));
+            @$doc->loadHTML(base64_decode($body));
             $path = new DOMXPath($doc);
-
-            $rentPrice = $path->query('//p[@class="rentprice"]')->item(0)->textContent;
-
         } catch (\Exception $e) {
             return $response->setStatusCode(404);
         }
 
+        $rentPrice = $path->query('//p[@class="rentprice"]')->item(0)->textContent ?? null;
+        $rentalTable = $doc->saveHTML($path->query('//table[@class="rental"]')->item(0)) ?? null;
+
         return $response->setContent([
-            'rent_price' => $rentPrice
+            'id' => $id,
+            'rent_price' => $rentPrice,
+            'rental_table' => $rentalTable
         ]);
     }
 }

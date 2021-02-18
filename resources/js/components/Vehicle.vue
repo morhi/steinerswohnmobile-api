@@ -53,18 +53,22 @@
             </div>
 
             <div class="attribute-list">
-                <div class="attribute">
+                <div class="attribute" v-if="field('passenger_capacity')">
                     {{ field('passenger_capacity') }} {{ label('passenger_capacity') }}
                 </div>
 
-                <div class="attribute">
+                <div class="attribute" v-if="field('sleeping_berths')">
                     {{ field('sleeping_berths') }} {{ label('sleeping_berths') }}
                 </div>
             </div>
         </div>
 
-        <div class="price">
+        <div class="price" v-if="type === 'sale'">
             {{ field('price') }}
+        </div>
+
+        <div class="price" v-if="type === 'rent'">
+            {{ data.rent_price }}
         </div>
 
         <div class="actions">
@@ -72,13 +76,11 @@
                 :href="pdfLink()"
                 target="_blank"
                 class="sqs-block-button-element"
-                @click="detailClickHandler"
             >Details ansehen</a>
 
             <a
                 :href="contactLink()"
                 class="sqs-block-button-element"
-                @click="contactClickHandler"
             >Kontakt aufnehmen</a>
         </div>
     </div>
@@ -87,6 +89,8 @@
 <script>
 import { ResponsiveWidth } from "../compositions/ResponsiveWidth";
 import Slider from "./Slider";
+import { onMounted, ref } from "vue";
+import { api } from "../api";
 
 export default {
     components: {
@@ -100,17 +104,26 @@ export default {
     },
     setup(props) {
         const { vehicle } = props;
-
         const { el, classes } = ResponsiveWidth();
 
-        const detailClickHandler = (e) => console.log(e)
-        const contactClickHandler = (e) => console.log(e)
-
+        const id = vehicle.getAttribute('id');
+        const type = vehicle.getAttribute('type');
         const field = (id, fallback = null) => vehicle.querySelector('field[id=' + id + ']')?.textContent ?? fallback;
+
+        const data = ref({});
+
+        const getVehicleData = async () => {
+            data.value = await api.getVehicle(id)
+        }
+
+        onMounted(getVehicleData);
 
         return {
             el,
             classes,
+            id,
+            type,
+            data,
 
             // Methods
             field,
@@ -125,10 +138,6 @@ export default {
 
                 return `mailto:info@steiners-wohnmobile.ch?subject=${ encodeURIComponent(subject) }`
             },
-
-            // Handlers
-            detailClickHandler,
-            contactClickHandler
         }
     }
 }
