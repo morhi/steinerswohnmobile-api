@@ -24,11 +24,13 @@
             <div class="title">{{ field('title') }}</div>
 
             <div class="attribute-list">
-                <div class="attribute">
+                <div class="attribute" v-if="field('first_registration')">
                     {{ label('first_registration') }} {{ field('first_registration') }}
                 </div>
 
-                <div class="attribute">{{ field('mileage') }}</div>
+                <div class="attribute" v-if="field('mileage')">
+                    {{ field('mileage') }}
+                </div>
             </div>
 
             <div class="attribute-list">

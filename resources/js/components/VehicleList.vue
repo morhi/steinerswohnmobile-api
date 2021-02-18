@@ -8,7 +8,7 @@
         ></vue-easy-lightbox>
 
         <div class="row sqs-row">
-            <div class="col sqs-col-4 span-4" v-for="item of items('sale')" :key="item.getAttribute('id')">
+            <div class="col sqs-col-4 span-4" v-for="item of items(type)" :key="item.getAttribute('id')">
                 <div class="sqs-block">
                     <Vehicle :vehicle="item" @lightbox="(images, index) => lightbox.open(images, index)"/>
                 </div>
@@ -31,6 +31,13 @@ export default {
     components: {
         Vehicle
     },
+    props: {
+        type: {
+            type: String,
+            required: false,
+            default: () => 'sale'
+        }
+    },
     setup() {
         const xml = ref(null)
         const lightbox = reactive({
@@ -39,7 +46,7 @@ export default {
             index: 0
         })
 
-        http.get('/occasion')
+        http.get('/vehicles')
             .then(res => res.data)
             .then(data => xml.value = (new DOMParser).parseFromString(data, 'application/xml'))
 

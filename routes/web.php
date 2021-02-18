@@ -11,8 +11,7 @@
 |
 */
 
-$router->get('/api/occasion', 'OccasionController@getOccasion');
-
+$router->get('/api/vehicles', 'VehiclesController@getVehicles');
 
 $router->get('/', function () use ($router) {
     if (env('APP_ENV') === 'local') {

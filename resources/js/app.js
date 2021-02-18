@@ -1,9 +1,17 @@
 import * as Vue from 'vue';
 import Lightbox from 'vue-easy-lightbox'
 
-import OccasionList from './components/OccasionList'
+import VehicleList from './components/VehicleList'
 
-const app = Vue.createApp(OccasionList)
+const containers = document.querySelectorAll('[data-vehicles]');
 
-app.use(Lightbox)
-app.mount('#occasion-list');
+containers.forEach(container => {
+    const type = container.getAttribute('data-vehicles');
+
+    const app = Vue.createApp(VehicleList, {
+        type
+    })
+
+    app.use(Lightbox)
+    app.mount(container);
+})
